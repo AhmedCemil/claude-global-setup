@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Ortak Çizim — Ghost Slot Tasarımı</title>
+<style>
+  * { box-sizing: border-box; }
+  /* DARK MODE — chrome + canvas both dark to cut glare. Claude draws bright
+     lines for the dark canvas. */
+  body { margin: 0; font-family: system-ui, 'Segoe UI', sans-serif; background: #121212; color: #e0e0e0; }
+  header { padding: 8px 14px; background: #1e1e1e; color: #fff; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #333; }
+  header b { font-size: 15px; }
+  .toolbar { display: flex; gap: 8px; align-items: center; }
+  button { padding: 5px 10px; border: 0; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #555; cursor: pointer; }
+  .swatch.active { outline: 3px solid #fff; }
+  #wrap { position: relative; width: 1100px; height: 640px; background: #1a1a1a; margin: 10px 14px; border-radius: 6px; box-shadow: 0 0 0 1px #333; }
+  canvas { display: block; touch-action: none; cursor: crosshair; }
+  /* base = Claude'un katmanı (altta, KOYU zemin). user = senin katmanın (üstte, ŞEFFAF). */
+  #base { background: #1a1a1a; z-index: 1; }
+  #user { background: transparent; z-index: 2; }
+  .legend { padding: 6px 14px; font-size: 13px; color: #ddd; background: #2a2a1a; border-bottom: 1px solid #4a4a2a; }
+  .note { padding: 6px 14px; font-size: 12px; color: #999; }
+</style>
+</head>
+<body>
+<header>
+  <b>🎨 Ortak Çizim Tahtası</b>
+  <span class="toolbar">
+    <span style="font-size:12px">Kalem:</span>
+    <span class="swatch active" style="background:#e53935" data-color="#e53935" title="kırmızı"></span>
+    <span class="swatch" style="background:#1976D2" data-color="#1976D2" title="mavi"></span>
+    <span class="swatch" style="background:#2e7d32" data-color="#2e7d32" title="yeşil"></span>
+    <span class="swatch" style="background:#fff" data-color="#fff" title="beyaz"></span>
+  </span>
+  <button id="clearUser" style="background:#fff;color:#1976D2">Çizimimi temizle</button>
+  <span class="note" id="status">Üstüne çizebilirsin — Claude senin çizdiğini okuyabilir.</span>
+</header>
+<div class="legend" id="legend">Claude'un önerisi aşağıda. Beğenmediğin yeri işaretle / üstüne çiz, sonra "okudum" de.</div>
+<div id="wrap">
+  <canvas id="base" width="1100" height="640" style="position:absolute;left:0;top:0;"></canvas>
+  <canvas id="user" width="1100" height="640" style="position:absolute;left:0;top:0;"></canvas>
+</div>
+<div class="note">Claude bu sayfayı 9333 debug portundan okur. Senin çizimin "user" katmanında saklanır.</div>
+
+<script>
+// ---- iki katman: base (Claude çizer) + user (sen çizersin) ----
+const base = document.getElementById('base'), bx = base.getContext('2d');
+const user = document.getElementById('user'), ux = user.getContext('2d');
+let color = '#e53935', drawing = false, last = null;
+window.__userStrokes = []; // Claude debug port'tan okur
+
+// ---- KALICILIK: her iki katman localStorage'a kaydedilir. Hard F5 silmez;
+//      sadece "temizle" düğmeleri veya Claude clear() siler. ----
+const LS_BASE = 'sharedCanvas.base.v1';   // Claude'un çizimi (dataURL)
+const LS_USER = 'sharedCanvas.user.v1';   // senin stroke'ların (JSON)
+
+function saveBase(){ try { localStorage.setItem(LS_BASE, base.toDataURL('image/png')); } catch(e){} }
+function saveUser(){ try { localStorage.setItem(LS_USER, JSON.stringify(window.__userStrokes)); } catch(e){} }
+
+function restoreBase(){
+  const d = localStorage.getItem(LS_BASE);
+  if(!d) return;
+  const img = new Image();
+  img.onload = () => bx.drawImage(img, 0, 0);
+  img.src = d;
+}
+function redrawUserFromStrokes(){
+  ux.clearRect(0,0,user.width,user.height);
+  (window.__userStrokes||[]).forEach(s=>{
+    if(!s.pts || s.pts.length<1) return;
+    ux.strokeStyle=s.color; ux.lineWidth=3; ux.lineCap='round'; ux.beginPath();
+    ux.moveTo(s.pts[0].x, s.pts[0].y);
+    s.pts.forEach(p=>ux.lineTo(p.x,p.y));
+    ux.stroke();
+    if(s.pts.length===1){ ux.fillStyle=s.color; ux.beginPath(); ux.arc(s.pts[0].x,s.pts[0].y,1.6,0,7); ux.fill(); }
+  });
+}
+function restoreUser(){
+  const d = localStorage.getItem(LS_USER);
+  if(!d) return;
+  try { window.__userStrokes = JSON.parse(d) || []; } catch(e){ window.__userStrokes = []; }
+  redrawUserFromStrokes();
+}
+// sayfa açılışında geri yükle (hard F5'ten sonra bile)
+restoreBase(); restoreUser();
+
+document.querySelectorAll('.swatch').forEach(s => s.addEventListener('click', () => {
+  document.querySelectorAll('.swatch').forEach(e => e.classList.remove('active'));
+  s.classList.add('active'); color = s.dataset.color;
+}));
+document.getElementById('clearUser').addEventListener('click', () => {
+  ux.clearRect(0,0,user.width,user.height); window.__userStrokes = [];
+  localStorage.removeItem(LS_USER);
+});
+
+function pos(e){ const r = user.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+user.addEventListener('pointerdown', e => { drawing = true; last = pos(e); window.__userStrokes.push({color, pts:[last]}); });
+user.addEventListener('pointermove', e => {
+  if(!drawing) return; const p = pos(e);
+  ux.strokeStyle = color; ux.lineWidth = 3; ux.lineCap = 'round';
+  ux.beginPath(); ux.moveTo(last.x,last.y); ux.lineTo(p.x,p.y); ux.stroke();
+  last = p; window.__userStrokes[window.__userStrokes.length-1].pts.push(p);
+});
+window.addEventListener('pointerup', () => { if(drawing){ drawing = false; saveUser(); } });
+
+// ---- Claude API: çizim primitifleri (debug port'tan çağrılır) ----
+// Her çizim base katmanını localStorage'a kaydeder → hard F5 sonrası kalır.
+window.draw = {
+  clear(){ bx.clearRect(0,0,base.width,base.height); localStorage.removeItem(LS_BASE); },
+  rect(x,y,w,h,opt={}){ bx.save(); bx.strokeStyle=opt.stroke||'#1976D2'; bx.fillStyle=opt.fill||'transparent';
+    bx.lineWidth=opt.lw||2; if(opt.dash)bx.setLineDash(opt.dash); bx.beginPath();
+    if(bx.roundRect) bx.roundRect(x,y,w,h,opt.r||8); else bx.rect(x,y,w,h);
+    if(opt.fill && opt.fill!=='transparent')bx.fill(); bx.stroke(); bx.restore(); saveBase(); },
+  text(t,x,y,opt={}){ bx.save(); bx.fillStyle=opt.color||'#222'; bx.font=opt.font||'13px system-ui';
+    bx.textAlign=opt.align||'left'; bx.fillText(t,x,y); bx.restore(); saveBase(); },
+  line(x1,y1,x2,y2,opt={}){ bx.save(); bx.strokeStyle=opt.stroke||'#222'; bx.lineWidth=opt.lw||2;
+    if(opt.dash)bx.setLineDash(opt.dash); bx.beginPath(); bx.moveTo(x1,y1); bx.lineTo(x2,y2); bx.stroke(); bx.restore(); saveBase(); },
+  setLegend(t){ document.getElementById('legend').textContent = t; },
+  setStatus(t){ document.getElementById('status').textContent = t; },
+  // toplu çizim sonunda tek kez kaydetmek için (çok sayıda çizimde hızlı):
+  flush(){ saveBase(); },
+};
+</script>
+</body>
+</html>

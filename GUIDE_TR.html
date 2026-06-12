@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Global Setup — Kılavuz</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#11161d; --panel:#161b22; --panel2:#1c232c;
+    --border:#283039; --border2:#323b46;
+    --txt:#e6edf3; --muted:#9aa7b4; --faint:#6e7b89;
+    --accent:#d97757; --accent2:#e8956f; --accent-dim:#3a2820;
+    --green:#3fb950; --blue:#58a6ff; --purple:#bc8cff; --yellow:#e3b341;
+    --radius:14px; --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,#1a2230 0%,var(--bg) 55%);
+    color:var(--txt);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel2);
+    border:1px solid var(--border);padding:.12em .42em;border-radius:6px;color:#f0d4c4}
+  .layout{display:grid;grid-template-columns:264px 1fr;max-width:1280px;margin:0 auto;min-height:100vh}
+
+  /* sidebar */
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    padding:30px 22px;border-right:1px solid var(--border);background:rgba(13,17,23,.6);
+    backdrop-filter:blur(6px)}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .logo{width:34px;height:34px;border-radius:9px;flex:none;
+    background:linear-gradient(135deg,var(--accent),#b85c3e);
+    display:grid;place-items:center;font-weight:800;color:#fff;font-size:17px;
+    box-shadow:0 4px 16px rgba(217,119,87,.35)}
+  .brand h1{font-size:15px;letter-spacing:.2px}
+  .brand span{display:block;font-size:11.5px;color:var(--faint);font-weight:400}
+  nav{margin-top:26px}
+  nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:1.4px;
+    color:var(--faint);margin:20px 0 8px 6px;font-weight:700}
+  nav a{display:block;color:var(--muted);font-size:13.5px;padding:6px 11px;
+    border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a:hover{background:var(--panel);color:var(--txt);text-decoration:none}
+  nav a.active{background:var(--accent-dim);color:var(--accent2);border-left-color:var(--accent)}
+
+  /* main */
+  main{padding:46px 54px 120px;max-width:880px}
+  .hero{margin-bottom:14px}
+  .hero .eyebrow{color:var(--accent2);font-weight:700;font-size:12.5px;
+    letter-spacing:2px;text-transform:uppercase}
+  .hero h2{font-size:38px;line-height:1.15;margin:10px 0 14px;letter-spacing:-.5px}
+  .hero p{color:var(--muted);font-size:16px;max-width:640px}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+  .pill{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);
+    background:var(--panel);color:var(--muted)}
+  .pill.ok{color:var(--green);border-color:#1d4427;background:#11210f}
+
+  section{margin-top:54px;scroll-margin-top:24px}
+  section>h3{font-size:23px;margin-bottom:6px;letter-spacing:-.3px;
+    display:flex;align-items:center;gap:10px}
+  section>h3 .ic{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+    font-size:14px;background:var(--panel2);border:1px solid var(--border)}
+  section .lead{color:var(--muted);margin-bottom:20px;font-size:15px}
+
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;
+    margin-bottom:16px;transition:.18s}
+  .card:hover{border-color:var(--border2);transform:translateY(-1px);
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
+  .card h4{font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+  .card h4 .tag{font-family:var(--mono);font-size:11px;color:var(--faint);font-weight:400;
+    background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:5px}
+  .card p{color:var(--muted);font-size:14px}
+  .card p+p{margin-top:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+  /* code blocks */
+  pre{background:#0a0e14;border:1px solid var(--border);border-radius:10px;
+    padding:15px 17px;overflow-x:auto;margin:14px 0;position:relative}
+  pre code{background:none;border:none;padding:0;color:#cdd9e5;font-size:12.7px;line-height:1.7}
+  .cmt{color:var(--faint)}.kw{color:var(--purple)}.str{color:#a5d6ff}.fn{color:var(--accent2)}.var{color:var(--yellow)}
+
+  /* steps */
+  .steps{counter-reset:s;list-style:none}
+  .steps li{position:relative;padding:0 0 22px 46px;counter-increment:s}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-2px;
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    font-weight:700;font-size:14px;color:#fff;
+    background:linear-gradient(135deg,var(--accent),#b85c3e)}
+  .steps li::after{content:"";position:absolute;left:14px;top:30px;bottom:2px;
+    width:2px;background:var(--border)}
+  .steps li:last-child::after{display:none}
+  .steps li h4{font-size:15px;margin-bottom:3px}
+  .steps li p{color:var(--muted);font-size:13.5px}
+
+  /* file tree (a <pre> so line breaks + indentation are preserved) */
+  pre.tree{font-family:var(--mono);font-size:12.5px;line-height:1.8;color:var(--muted);
+    background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px 22px;margin:0 0 16px;overflow-x:auto;white-space:pre}
+  pre.tree .d{color:var(--blue);font-weight:600}
+  pre.tree .f{color:var(--txt)}
+  pre.tree .note{color:var(--faint)}
+
+  .callout{border-left:3px solid var(--accent);background:var(--accent-dim);
+    border-radius:0 10px 10px 0;padding:13px 18px;margin:16px 0;font-size:13.5px;color:#f0d9cd}
+  .callout.warn{border-left-color:var(--yellow);background:#211b0c;color:#f0e4c4}
+  .callout.good{border-left-color:var(--green);background:#0f1f12;color:#cdebd2}
+  .callout b{color:#fff}
+
+  footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--border);
+    color:var(--faint);font-size:12.5px}
+  .kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);
+    border:1px solid var(--border2);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+  .langsw{display:flex;gap:6px;margin-top:14px}
+  .langsw a{flex:1;text-align:center;font-size:12px;font-weight:600;padding:5px 0;border-radius:7px;
+    border:1px solid var(--border2);color:var(--muted)}
+  .langsw a.on{background:var(--accent-dim);color:var(--accent2);border-color:var(--accent)}
+  .langsw a:hover{text-decoration:none;background:var(--panel)}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div><h1>Claude Global Setup<span>taşınabilir · her PC · koyu tema</span></h1></div>
+    </div>
+    <div class="langsw">
+      <a href="GUIDE.html">EN</a>
+      <a href="GUIDE_TR.html" class="on">TR</a>
+    </div>
+    <nav id="nav">
+      <div class="grp">Başlangıç</div>
+      <a href="#overview">Genel bakış</a>
+      <a href="#install">Yeni PC'ye kurulum</a>
+      <a href="#tree">Sette neler var</a>
+      <div class="grp">Bileşenler</div>
+      <a href="#claudemd">CLAUDE.md kuralları</a>
+      <a href="#python">Python kuralları</a>
+      <a href="#agents">Alt ajanlar</a>
+      <a href="#skill">save-session-state</a>
+      <a href="#canvas">Paylaşımlı tuval</a>
+      <a href="#widget">Kullanım widget'ı</a>
+      <a href="#settings">settings.json</a>
+      <div class="grp">Referans</div>
+      <a href="#env">Kullanım .env</a>
+      <a href="#portable">Taşınabilirlik kuralları</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="hero" id="overview">
+      <div class="eyebrow">Global Claude Code Yapılandırması</div>
+      <h2>Tek kurulum, her PC'ye taşınır.</h2>
+      <p>Bu set, sizin ve Claude'un birlikte nasıl çalıştığının taşınabilir ana kopyasıdır —
+        kurallar, bağlamı koruyan alt ajanlar, kontrol noktası becerisi ve görsel çizim
+        tuvali. Herhangi bir Windows makinesinde <code>~/.claude</code> içine bırakın ve
+        her yerde olduğu gibi aynı şekilde çalışmaya devam edin.</p>
+      <div class="pills">
+        <span class="pill ok">✓ Sabit kodlanmış yol yok</span>
+        <span class="pill ok">✓ Win11 · PowerShell</span>
+        <span class="pill ok">✓ Çevrimdışı çalışır</span>
+        <span class="pill">Opus · orta efor</span>
+      </div>
+    </div>
+
+    <section id="install">
+      <h3><span class="ic">⚡</span>Yeni bir PC'ye kurulum</h3>
+      <p class="lead">Kurulum programı yok, kod düzenlemesi yok. Kopyalayın ve (isteğe bağlı) kimlik bilgilerinizi ekleyin.</p>
+      <ol class="steps">
+        <li>
+          <h4><code>.claude</code> klasörünü ana dizininize kopyalayın</h4>
+          <p>Seti açın, ardından içindeki <code>.claude/</code> klasörünü <code>%USERPROFILE%\.claude</code>
+             (yani <code>~/.claude</code>) ile birleştirin. Windows'ta bu <code>C:\Users\&lt;siz&gt;\.claude</code>
+             olur — ama bunu hiç yazmazsınız; <code>$HOME</code> üzerinden çözülür.</p>
+          <pre><code><span class="cmt"># PowerShell — açılmış setin içinden</span>
+<span class="fn">Copy-Item</span> .\.claude\* <span class="var">$HOME</span>\.claude\ -Recurse -Force</code></pre>
+        </li>
+        <li>
+          <h4>Kullanım kimlik bilgilerinizi ekleyin <span style="font-weight:400;color:var(--faint)">(isteğe bağlı)</span></h4>
+          <p>Canlı 5 saatlik limit % göstergesi için şablonu kopyalayıp üç değeri doldurun.
+             Bunu atlasanız da diğer her şey çalışır — sadece % görmezsiniz.</p>
+          <pre><code><span class="fn">Copy-Item</span> <span class="var">$HOME</span>\.claude\claude_usage.env.example <span class="var">$HOME</span>\.claude\claude_usage.env
+<span class="cmt"># sonra claude_usage.env'i düzenleyin → SESSION_KEY / DEVICE_ID / ORG_ID</span></code></pre>
+        </li>
+        <li>
+          <h4>Çözüldüğünü doğrulayın</h4>
+          <p>Limit betiğinin hızlı testi (Python yalnızca bu özellik için gerekli):</p>
+          <pre><code><span class="kw">python</span> <span class="var">$HOME</span>\.claude\scripts\claude_limit_percent.py --verbose
+<span class="cmt"># → örn.  15.0 (resets in 2h44m)</span></code></pre>
+        </li>
+        <li>
+          <h4>Tamam</h4>
+          <p>Claude Code'u herhangi bir yerde başlatın. <code>CLAUDE.md</code> otomatik yüklenir; ajanlar,
+             beceri ve tuval global olarak hazırdır.</p>
+        </li>
+      </ol>
+      <div class="callout good"><b>Neden kurulum programı yok:</b> sadece dosya istediniz. Klasörü
+        birleştirmek <em>kurulumun ta kendisi</em> — hiçbir şey üretilmez, makineye özgü hiçbir şey yok.</div>
+    </section>
+
+    <section id="tree">
+      <h3><span class="ic">🗂</span>Sette neler var</h3>
+      <p class="lead"><code>~/.claude</code> dizininin taşınabilir kısımlarının bir aynası — oturum, önbellek veya kimlik bilgisi yok.</p>
+      <pre class="tree"><span class="d">claude_global_setup/</span>
+├─ <span class="f">GUIDE.html</span> · <span class="f">GUIDE_TR.html</span>     <span class="note"># kılavuz (EN / TR)</span>
+├─ <span class="f">README.md</span> · <span class="f">README_TR.md</span>       <span class="note"># hızlı metin sürümü</span>
+├─ <span class="f">.gitignore</span>                    <span class="note"># sırları git'ten uzak tutar</span>
+├─ <span class="d">.claude/</span>                      <span class="note"># ~/.claude ile birleştir</span>
+│  ├─ <span class="f">CLAUDE.md</span>                  <span class="note"># global çalışma kuralları</span>
+│  ├─ <span class="f">CLAUDE - Python.md</span>         <span class="note"># Python ortak kuralları</span>
+│  ├─ <span class="f">settings.json</span>              <span class="note"># tema / efor / model</span>
+│  ├─ <span class="f">claude_usage.env.example</span>   <span class="note"># kimlik bilgisi şablonu</span>
+│  ├─ <span class="d">agents/</span>                   <span class="note"># co-explorer · co-tester</span>
+│  ├─ <span class="d">skills/</span>                   <span class="note"># save-session-state</span>
+│  ├─ <span class="d">scripts/</span>                  <span class="note"># claude_limit_percent.py</span>
+│  └─ <span class="d">tools/</span>                    <span class="note"># shared-canvas.html</span>
+└─ <span class="d">usage-widget/</span>                 <span class="note"># Python'suz masaüstü widget'ı</span>
+   ├─ <span class="f">usage-widget.ps1</span>           <span class="note"># WinForms + curl.exe</span>
+   ├─ <span class="f">cuw.vbs</span> · <span class="f">cuw.bat</span>          <span class="note"># gizli başlatma</span>
+   └─ <span class="f">README.md</span> · <span class="f">README_TR.md</span></pre>
+    </section>
+
+    <section id="claudemd">
+      <h3><span class="ic">📐</span>CLAUDE.md — çalışma kuralları</h3>
+      <p class="lead">Her oturuma yüklenir. Bu, uzun oturumlardan damıtılmış <em>nasıl çalıştığımızdır</em>.</p>
+      <div class="grid2">
+        <div class="card"><h4>Kullanıcı nasıl düşünür</h4>
+          <p>"Yeterli mi?", olabildiğince sade, kopyala-yapıştır hazır, parçalardan önce bütün resim,
+             koddan önce maket, satıcı otomatı değil iş arkadaşı. Rota düzeltmeleri doğrudan gelir — yeniden hizalan, eski planı sürdürme.</p></div>
+        <div class="card"><h4>Kritik kurallar</h4>
+          <p>İzinsiz varsayılan değer yok · eksik kararları uygulamadan önce sor ·
+             isimlendirmeyi koru · <code>_v2</code> ekleri yok · yerinde güncelle · spekülatif iskele yok.</p></div>
+        <div class="card"><h4>Türkçe metin</h4>
+          <p>Kullanıcıya görünen metinlerde her zaman Türkçe karakter · Türkçe-güvenli <code>trLower()</code> ·
+             her şey <code>t()</code> üzerinden · uçtan uca UTF-8.</p></div>
+        <div class="card"><h4>Hata protokolü</h4>
+          <p>Belirti değil kök neden · test takımını yeşil tut · engelleri yok etmek için yıkıcı
+             kısayollar yok (<code>--no-verify</code>, <code>git reset --hard</code>).</p></div>
+        <div class="card"><h4>Bağlam penceresi disiplini</h4>
+          <p>Ana sohbet = orkestratör (Opus). 5 saatlik pencereyi korumak için angarya işi daha ucuz
+             alt ajanlara devret. Güvenlik valfi: ana sohbet, sığ bir alt ajan sonucundan üstündür.</p></div>
+        <div class="card"><h4>Hafıza modeli</h4>
+          <p><b>Global not yok.</b> Proje başına tek <code>MEMORY.md</code>, projenin kendi klasöründe.
+             Sadece gerçekler — asla hafıza kuralının kendisi değil.</p></div>
+      </div>
+      <div class="callout"><b>Verilen klasörde kal:</b> sana gösterilen klasör dışındaki dizinlere
+        okuma/arama/<code>cd</code> yapma — kardeş kod bağlamı şişirir ve yanlış kuralları uygular.</div>
+    </section>
+
+    <section id="python">
+      <h3><span class="ic">🐍</span>CLAUDE - Python.md</h3>
+      <p class="lead">Proje Python ise CLAUDE.md'nin üstüne okunur. Derleme bilgi birikimi kaldı; makine yolları çıkarıldı.</p>
+      <div class="grid2">
+        <div class="card"><h4>Dağıtım</h4><p>Proje başına <code>requirements.txt</code>; her proje tek bir exe olarak çıksın diye Nuitka-uyumlu importlar.</p></div>
+        <div class="card"><h4>Yapı</h4><p><code>src/ui · core · config</code>; <code>main.py</code> koordine eder, uygulamaz; core asla UI import etmez.</p></div>
+        <div class="card"><h4>Arayüz</h4><p>Yalnızca CustomTkinter · Material Design 3 paleti · kompakt yoğunluk · tüm tokenları tek <code>theme.py</code> tutar.</p></div>
+        <div class="card"><h4>Windows konsolu</h4><p>Unicode/Türkçe çıktıyı bir unicode dönüştürücüden geçir ki <code>?</code> olmasın.</p></div>
+      </div>
+      <div class="callout warn"><b>Bilerek kaldırıldı:</b> sabit bir paylaşımlı <code>.venv</code> konumu ve
+        projeye özgü istisnalar gibi makineye özel kısımlar. Python <em>iş akışı</em> taşınır; venv'in yeri taşınmaz.</div>
+    </section>
+
+    <section id="agents">
+      <h3><span class="ic">🤖</span>Alt ajanlar</h3>
+      <p class="lead">Büyük çıktıyı ana bağlamdan uzak tutan, yığını tanıyan yardımcılar. Türüne göre çağır, yeniden anlatma.</p>
+      <div class="grid2">
+        <div class="card"><h4><code>co-explorer</code> <span class="tag">sonnet · salt-okunur</span></h4>
+          <p>Kod tabanı turları ve "X nerede/nasıl" aramaları. Dosya dökümü değil, sıkı bir sonuç + 2–5
+             <code>dosya:satır</code> referansı döner. Tek listeden Go/JS ile Python'u ayırır. Aktif projede kalır.</p></div>
+        <div class="card"><h4><code>co-tester</code> <span class="tag">sonnet · komut çalıştırır</span></h4>
+          <p>Derleme/test/e2e çalıştırır ve bir karar döner — GEÇTİ/KALDI, sayılar, kırpılmış hatalar —
+             transkript değil. Kırmızıyı hile ile yeşil yapmaz. Projenin venv'ini kullanır, asla sistem Python'unu.</p></div>
+      </div>
+    </section>
+
+    <section id="skill">
+      <h3><span class="ic">💾</span>save-session-state</h3>
+      <p class="lead">Oturumu kontrol noktasına al + 5 saatlik duvara ne kadar yakın olduğunu bildir.</p>
+      <div class="card">
+        <p>"save state" / "checkpoint" / bir kilometre taşı denildiğinde beceri: canlı 5s limit %'sini okur,
+           sonra aktif projenin <code>MEMORY.md</code> dosyasına zaman damgalı kısa bir blok ekler; böylece
+           sıkıştırma veya limit sıfırlanması sonrası yeni bir oturum temiz başlar.</p>
+        <pre><code><span class="cmt"># % bu taşınabilir çağrıdan gelir (sürücü yolu yok)</span>
+<span class="kw">python</span> ~/.claude/scripts/claude_limit_percent.py --verbose
+<span class="cmt"># Saved at 14:20. 5h limit at 15.0% (resets in 2h44m).</span></code></pre>
+      </div>
+      <div class="callout">Yumuşak başarısızlık: kimlik bilgisi yoksa kontrol noktası yine kaydedilir — sadece % satırı eksik olur.</div>
+    </section>
+
+    <section id="canvas">
+      <h3><span class="ic">🎨</span>Paylaşımlı çizim tuvali</h3>
+      <p class="lead">Bir yerleşim veya etkileşimde kelimeler bulanıklaştığında çift yönlü görsel kanal.</p>
+      <div class="card">
+        <p>Claude bir öneriyi <b>base</b> katmanına çizer; siz düzeltmeleri saydam <b>user</b> katmanına
+           çizersiniz; ikisi de <code>localStorage</code>'da kalıcı olur. Hata-ayıklama portlu Chrome ile
+           sürülür (<code>--remote-debugging-port=9333</code>). Animasyonlar tek bir <code>requestAnimationFrame</code>
+           döngüsüyle yerel çalışır — neredeyse token-bedava, böylece Claude kod yazılmadan önce bir etkileşimi <em>hareket ettirebilir</em>.</p>
+        <p><a href=".claude/tools/shared-canvas.html">→ shared-canvas.html'i aç</a></p>
+      </div>
+    </section>
+
+    <section id="widget">
+      <h3><span class="ic">📊</span>Kullanım widget'ı <span style="font-size:13px;color:var(--faint);font-weight:400">— Python'suz</span></h3>
+      <p class="lead">5 saatlik limitinizin masaüstünde yüzen göstergesi. Win10/11'de sıfır kurulum.</p>
+
+      <!-- widget + renk kademeleri maketi (saf SVG/CSS, görsel dosya yok) -->
+      <div class="card" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center">
+        <div>
+          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">widget</div>
+          <svg width="200" height="74" viewBox="0 0 200 74" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.5))">
+            <rect x="1" y="1" width="198" height="72" rx="8" fill="#1a1a1a" stroke="#2c2c2c"/>
+            <text x="14" y="32" font-family="Segoe UI,sans-serif" font-size="17" font-weight="bold" fill="#00ff88">5h: 47% <tspan fill="#00ff88">(1h58m)</tspan></text>
+            <text x="14" y="56" font-family="Consolas,monospace" font-size="13" fill="#888">@ 14:02:13</text>
+          </svg>
+          <div style="font-size:11px;color:var(--faint);margin-top:8px;text-align:center">tıkla → <code style="font-size:10px">@14:30</code> · menü için sağ tık</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">yüke göre renk</div>
+          <svg width="220" height="92" viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg">
+            <g font-family="Segoe UI,sans-serif" font-size="13" font-weight="bold">
+              <circle cx="14" cy="14" r="6" fill="#00ff88"/><text x="28" y="19" fill="#cfd8e3">&lt; %50  — yeşil</text>
+              <circle cx="14" cy="38" r="6" fill="#dce646"/><text x="28" y="43" fill="#cfd8e3">%50–70 — sarı</text>
+              <circle cx="14" cy="62" r="6" fill="#ffb446"/><text x="28" y="67" fill="#cfd8e3">%70–90 — turuncu</text>
+              <circle cx="14" cy="86" r="6" fill="#ff5a5a"/><text x="28" y="91" fill="#cfd8e3">≥ %90  — kırmızı</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card"><h4>Nedir</h4>
+          <p>Her zaman üstte, yarı saydam, sürüklenebilir. 1. satır limit % + ne zaman sıfırlandığı;
+             2. satır en son ne zaman kontrol edildiği. Yüke göre renkli (yukarıya bakın). Başlatma:
+             <code>usage-widget\cuw.bat</code>.</p></div>
+        <div class="card"><h4>Sıfır kurulum</h4>
+          <p>Yalnızca Windows yerleşikleri: pencere için <b>WinForms</b>, HTTPS çağrısı için
+             <b>curl.exe</b>. Python yok, pip yok, yönetici yok.</p></div>
+        <div class="card"><h4>5s ↔ 5s + 7g</h4>
+          <p>7 günlük satır varsayılan kapalı (bazı hesaplar haftalık veri döndürmez → <code>7d: n/a</code>).
+             <b>Sağ tık → Show 7d</b> ile canlı aç/kapat — kod düzenlemesi yok. Seçim kalıcıdır.</p></div>
+        <div class="card"><h4>Tıkla, zamanı değiştir</h4>
+          <p>Widget'a <b>tıklayarak</b> sıfırlanma göstergesini kalan süre <code>(1h58m)</code> ile
+             tam saat <code>@14:30</code> arasında değiştir. Taşımak için <b>sürükle</b>, menü için <b>sağ tık</b>.</p></div>
+        <div class="card"><h4>Aynı kimlik bilgileri</h4>
+          <p>Tek paylaşımlı <code>~/.claude/claude_usage.env</code> dosyasını okur — ayrı yapılandırma yok.</p></div>
+        <div class="card"><h4>Limit güvenliği</h4>
+          <p>403 alınca boş kalmak yerine son iyi değerleri korur ve saat satırını
+             <code>(RL)</code> ile işaretler, sonra 60 sn'de tekrar dener.</p></div>
+      </div>
+      <div class="callout warn"><b>"Bu sistemde betik çalıştırma devre dışı":</b> Windows <code>.ps1</code>
+        dosyalarını varsayılan engeller. Hiçbir şey değiştirmenize gerek yok — her zaman
+        <code>cuw.bat</code> / <code>cuw.vbs</code> ile başlatın; bunlar yalnızca o çalıştırma için
+        <code>-ExecutionPolicy Bypass</code> verir (yönetici gerekmez, kalıcı bir şey değişmez).
+        <code>.ps1</code>'e doğrudan çift tıklamayın.</div>
+      <div class="callout"><b>Neden <code>Invoke-RestMethod</code> değil curl:</b> claude.ai Cloudflare arkasında,
+        PowerShell'in TLS yığınını 403 ile sınar ama <code>curl.exe</code>'ı geçirir. curl, bağımlılıksız güvenilir yoldur.</div>
+    </section>
+
+    <section id="settings">
+      <h3><span class="ic">⚙️</span>settings.json</h3>
+      <p class="lead">Küçük, yolsuz, olduğu gibi taşınabilir.</p>
+      <pre><code>{
+  <span class="str">"theme"</span>: <span class="str">"dark"</span>,
+  <span class="str">"agentPushNotifEnabled"</span>: <span class="kw">true</span>,
+  <span class="str">"effortLevel"</span>: <span class="str">"medium"</span>,   <span class="cmt">// yalnızca Claude değerli derse high</span>
+  <span class="str">"model"</span>: <span class="str">"opus"</span>,
+  <span class="str">"includeCoAuthoredBy"</span>: <span class="kw">false</span>,
+  <span class="str">"cleanupPeriodDays"</span>: <span class="var">365</span>
+}</code></pre>
+      <div class="callout warn"><b>Bilerek dahil edilmedi:</b> iş makinesindeki <code>bypassPermissions</code> ve
+        <code>skipDangerousModePermissionPrompt</code> — bu, varsayılan olarak gönderilecek değil, bilinçli
+        tercih edilecek bir güvenlik duruşudur.</div>
+    </section>
+
+    <section id="env">
+      <h3><span class="ic">🔑</span>Kullanım .env'i</h3>
+      <p class="lead">Kişisel oturum kimlik bilgileri — setin dışında, paylaşılan zip'in dışında tutulur.</p>
+      <div class="card">
+        <p>5s limit göstergesini üç anahtar besler: <code>SESSION_KEY</code>, <code>DEVICE_ID</code>, <code>ORG_ID</code>.
+           Set yalnızca <code>claude_usage.env.example</code> (boş) gönderir. Gerçek dosyanız
+           <code>~/.claude/claude_usage.env</code> içinde yaşar, herhangi bir proje klasöründen tamamen ayrıdır.</p>
+      </div>
+      <div class="callout warn"><b>Güvenlik:</b> doldurulmuş <code>.env</code>'i asla paylaştığınız zip'e koymayın —
+        canlı bir oturum token'ı. Sete yalnızca <code>.example</code> aittir.</div>
+    </section>
+
+    <section id="portable">
+      <h3><span class="ic">🧭</span>Taşınabilirlik kuralları (PC'den bağımsız nasıl kalır)</h3>
+      <div class="grid2">
+        <div class="card"><h4>Mutlak yol yok</h4>
+          <p>Her şey <code>$HOME</code> / <code>~</code> veya betiğin kendi konumundan
+             (<code>__file__</code>) çözülür. Tüm ağaçta sürücü harfi arayın → sıfır eşleşme.</p></div>
+        <div class="card"><h4>.env aramayla bulunur</h4>
+          <p>Limit betiği şuralara bakar: <code>$CLAUDE_LIMIT_ENV</code> → <code>~/.claude/claude_usage.env</code>
+             → betiğin yanı. İlk bulunan kazanır. Yeni makine = dosyayı bırak, bitti.</p></div>
+        <div class="card"><h4>Ölü proje yok</h4>
+          <p>Tüm projeye özgü ve işe özel referanslar çıkarıldı. Kurallar projeden bağımsız; proje ayrıntısı
+             her projenin kendi dosyalarında yaşar.</p></div>
+        <div class="card"><h4>Win11 + PowerShell</h4>
+          <p>Tek ortam varsayımı — tüm PC'leriniz için doğru. Belirtildiği tek yer CLAUDE.md başlığıdır.</p></div>
+      </div>
+    </section>
+
+    <footer>
+      <code>~/.claude</code> kurulumunun her yere taşınabilir ana kopyası olarak yapıldı · taşımak için
+      <code>claude_global_setup</code> klasörünü zip'leyin · canlı yapılandırma <code>~/.claude</code> içinde kalır.
+      <br>İpucu: herhangi bir bileşene atlamak için <span class="kbd">Ctrl</span>+<span class="kbd">F</span>.
+    </footer>
+  </main>
+</div>
+
+<script>
+  // kenar çubuğunda aktif bölüm vurgusu
+  const links=[...document.querySelectorAll('#nav a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:"-20% 0px -70% 0px",threshold:0});
+  document.querySelectorAll('section,.hero').forEach(s=>{if(s.id)obs.observe(s)});
+</script>
+</body>
+</html>
