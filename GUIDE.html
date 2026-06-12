@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Global Setup — Guide</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#11161d; --panel:#161b22; --panel2:#1c232c;
+    --border:#283039; --border2:#323b46;
+    --txt:#e6edf3; --muted:#9aa7b4; --faint:#6e7b89;
+    --accent:#d97757; --accent2:#e8956f; --accent-dim:#3a2820;
+    --green:#3fb950; --blue:#58a6ff; --purple:#bc8cff; --yellow:#e3b341;
+    --radius:14px; --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,#1a2230 0%,var(--bg) 55%);
+    color:var(--txt);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel2);
+    border:1px solid var(--border);padding:.12em .42em;border-radius:6px;color:#f0d4c4}
+  .layout{display:grid;grid-template-columns:264px 1fr;max-width:1280px;margin:0 auto;min-height:100vh}
+
+  /* sidebar */
+  aside{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    padding:30px 22px;border-right:1px solid var(--border);background:rgba(13,17,23,.6);
+    backdrop-filter:blur(6px)}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .logo{width:34px;height:34px;border-radius:9px;flex:none;
+    background:linear-gradient(135deg,var(--accent),#b85c3e);
+    display:grid;place-items:center;font-weight:800;color:#fff;font-size:17px;
+    box-shadow:0 4px 16px rgba(217,119,87,.35)}
+  .brand h1{font-size:15px;letter-spacing:.2px}
+  .brand span{display:block;font-size:11.5px;color:var(--faint);font-weight:400}
+  nav{margin-top:26px}
+  nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:1.4px;
+    color:var(--faint);margin:20px 0 8px 6px;font-weight:700}
+  nav a{display:block;color:var(--muted);font-size:13.5px;padding:6px 11px;
+    border-radius:8px;border-left:2px solid transparent;transition:.15s}
+  nav a:hover{background:var(--panel);color:var(--txt);text-decoration:none}
+  nav a.active{background:var(--accent-dim);color:var(--accent2);border-left-color:var(--accent)}
+
+  /* main */
+  main{padding:46px 54px 120px;max-width:880px}
+  .hero{margin-bottom:14px}
+  .hero .eyebrow{color:var(--accent2);font-weight:700;font-size:12.5px;
+    letter-spacing:2px;text-transform:uppercase}
+  .hero h2{font-size:38px;line-height:1.15;margin:10px 0 14px;letter-spacing:-.5px}
+  .hero p{color:var(--muted);font-size:16px;max-width:640px}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+  .pill{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);
+    background:var(--panel);color:var(--muted)}
+  .pill.ok{color:var(--green);border-color:#1d4427;background:#11210f}
+
+  section{margin-top:54px;scroll-margin-top:24px}
+  section>h3{font-size:23px;margin-bottom:6px;letter-spacing:-.3px;
+    display:flex;align-items:center;gap:10px}
+  section>h3 .ic{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+    font-size:14px;background:var(--panel2);border:1px solid var(--border)}
+  section .lead{color:var(--muted);margin-bottom:20px;font-size:15px}
+
+  .card{background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;
+    margin-bottom:16px;transition:.18s}
+  .card:hover{border-color:var(--border2);transform:translateY(-1px);
+    box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
+  .card h4{font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+  .card h4 .tag{font-family:var(--mono);font-size:11px;color:var(--faint);font-weight:400;
+    background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:5px}
+  .card p{color:var(--muted);font-size:14px}
+  .card p+p{margin-top:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+  /* code blocks */
+  pre{background:#0a0e14;border:1px solid var(--border);border-radius:10px;
+    padding:15px 17px;overflow-x:auto;margin:14px 0;position:relative}
+  pre code{background:none;border:none;padding:0;color:#cdd9e5;font-size:12.7px;line-height:1.7}
+  .cmt{color:var(--faint)}.kw{color:var(--purple)}.str{color:#a5d6ff}.fn{color:var(--accent2)}.var{color:var(--yellow)}
+
+  /* steps */
+  .steps{counter-reset:s;list-style:none}
+  .steps li{position:relative;padding:0 0 22px 46px;counter-increment:s}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-2px;
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    font-weight:700;font-size:14px;color:#fff;
+    background:linear-gradient(135deg,var(--accent),#b85c3e)}
+  .steps li::after{content:"";position:absolute;left:14px;top:30px;bottom:2px;
+    width:2px;background:var(--border)}
+  .steps li:last-child::after{display:none}
+  .steps li h4{font-size:15px;margin-bottom:3px}
+  .steps li p{color:var(--muted);font-size:13.5px}
+
+  /* file tree (a <pre> so line breaks + indentation are preserved) */
+  pre.tree{font-family:var(--mono);font-size:12.5px;line-height:1.8;color:var(--muted);
+    background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--border);
+    border-radius:var(--radius);padding:20px 22px;margin:0 0 16px;overflow-x:auto;white-space:pre}
+  pre.tree .d{color:var(--blue);font-weight:600}
+  pre.tree .f{color:var(--txt)}
+  pre.tree .note{color:var(--faint)}
+
+  .callout{border-left:3px solid var(--accent);background:var(--accent-dim);
+    border-radius:0 10px 10px 0;padding:13px 18px;margin:16px 0;font-size:13.5px;color:#f0d9cd}
+  .callout.warn{border-left-color:var(--yellow);background:#211b0c;color:#f0e4c4}
+  .callout.good{border-left-color:var(--green);background:#0f1f12;color:#cdebd2}
+  .callout b{color:#fff}
+
+  footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--border);
+    color:var(--faint);font-size:12.5px}
+  .kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);
+    border:1px solid var(--border2);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+  .langsw{display:flex;gap:6px;margin-top:14px}
+  .langsw a{flex:1;text-align:center;font-size:12px;font-weight:600;padding:5px 0;border-radius:7px;
+    border:1px solid var(--border2);color:var(--muted)}
+  .langsw a.on{background:var(--accent-dim);color:var(--accent2);border-color:var(--accent)}
+  .langsw a:hover{text-decoration:none;background:var(--panel)}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div><h1>Claude Global Setup<span>portable · any PC · dark</span></h1></div>
+    </div>
+    <div class="langsw">
+      <a href="GUIDE.html" class="on">EN</a>
+      <a href="GUIDE_TR.html">TR</a>
+    </div>
+    <nav id="nav">
+      <div class="grp">Start</div>
+      <a href="#overview">Overview</a>
+      <a href="#install">Install on a new PC</a>
+      <a href="#tree">What's in the set</a>
+      <div class="grp">Components</div>
+      <a href="#claudemd">CLAUDE.md rules</a>
+      <a href="#python">Python rules</a>
+      <a href="#agents">Subagents</a>
+      <a href="#skill">save-session-state</a>
+      <a href="#canvas">Shared canvas</a>
+      <a href="#widget">Usage widget</a>
+      <a href="#settings">settings.json</a>
+      <div class="grp">Reference</div>
+      <a href="#env">Usage .env</a>
+      <a href="#portable">Portability rules</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="hero" id="overview">
+      <div class="eyebrow">Global Claude Code Config</div>
+      <h2>One setup, carried to every PC.</h2>
+      <p>This set is the portable master of how you and Claude work together —
+        the rules, the context-saving subagents, the checkpoint skill, the visual
+        drawing canvas. Drop it into <code>~/.claude</code> on any Windows machine and
+        you're running the same way you do everywhere else.</p>
+      <div class="pills">
+        <span class="pill ok">✓ Zero hardcoded paths</span>
+        <span class="pill ok">✓ Win11 · PowerShell</span>
+        <span class="pill ok">✓ Offline-ready</span>
+        <span class="pill">Opus · medium effort</span>
+      </div>
+    </div>
+
+    <section id="install">
+      <h3><span class="ic">⚡</span>Install on a new PC</h3>
+      <p class="lead">No installer, no code edits. Copy and (optionally) drop in your credentials.</p>
+      <ol class="steps">
+        <li>
+          <h4>Copy the <code>.claude</code> folder into your home dir</h4>
+          <p>Unzip the set, then merge its <code>.claude/</code> into <code>%USERPROFILE%\.claude</code>
+             (i.e. <code>~/.claude</code>). On Windows that's <code>C:\Users\&lt;you&gt;\.claude</code> — but you
+             never type that; it resolves from <code>$HOME</code>.</p>
+          <pre><code><span class="cmt"># PowerShell — from inside the unzipped set</span>
+<span class="fn">Copy-Item</span> .\.claude\* <span class="var">$HOME</span>\.claude\ -Recurse -Force</code></pre>
+        </li>
+        <li>
+          <h4>Add your usage credentials <span style="font-weight:400;color:var(--faint)">(optional)</span></h4>
+          <p>For the live 5-hour limit % readout, copy the template and fill in three values.
+             Skip this and everything else still works — you just won't see the %.</p>
+          <pre><code><span class="fn">Copy-Item</span> <span class="var">$HOME</span>\.claude\claude_usage.env.example <span class="var">$HOME</span>\.claude\claude_usage.env
+<span class="cmt"># then edit claude_usage.env → SESSION_KEY / DEVICE_ID / ORG_ID</span></code></pre>
+        </li>
+        <li>
+          <h4>Confirm it resolves</h4>
+          <p>Quick smoke test of the limit script (Python required only for this one feature):</p>
+          <pre><code><span class="kw">python</span> <span class="var">$HOME</span>\.claude\scripts\claude_limit_percent.py --verbose
+<span class="cmt"># → e.g.  15.0 (resets in 2h44m)</span></code></pre>
+        </li>
+        <li>
+          <h4>Done</h4>
+          <p>Launch Claude Code anywhere. <code>CLAUDE.md</code> loads automatically; agents,
+             the skill, and the canvas are available globally.</p>
+        </li>
+      </ol>
+      <div class="callout good"><b>Why no installer:</b> you asked for files-only. Merging the
+        folder <em>is</em> the install — nothing is generated, nothing is machine-specific.</div>
+    </section>
+
+    <section id="tree">
+      <h3><span class="ic">🗂</span>What's in the set</h3>
+      <p class="lead">A mirror of the portable parts of <code>~/.claude</code> — no sessions, caches, or credentials.</p>
+      <pre class="tree"><span class="d">claude_global_setup/</span>
+├─ <span class="f">GUIDE.html</span> · <span class="f">GUIDE_TR.html</span>     <span class="note"># the guide (EN / TR)</span>
+├─ <span class="f">README.md</span> · <span class="f">README_TR.md</span>       <span class="note"># quick text version</span>
+├─ <span class="f">.gitignore</span>                    <span class="note"># keeps secrets out of git</span>
+├─ <span class="d">.claude/</span>                      <span class="note"># merge into ~/.claude</span>
+│  ├─ <span class="f">CLAUDE.md</span>                  <span class="note"># global working rules</span>
+│  ├─ <span class="f">CLAUDE - Python.md</span>         <span class="note"># Python cross-project rules</span>
+│  ├─ <span class="f">settings.json</span>              <span class="note"># theme / effort / model</span>
+│  ├─ <span class="f">claude_usage.env.example</span>   <span class="note"># credentials template</span>
+│  ├─ <span class="d">agents/</span>                   <span class="note"># co-explorer · co-tester</span>
+│  ├─ <span class="d">skills/</span>                   <span class="note"># save-session-state</span>
+│  ├─ <span class="d">scripts/</span>                  <span class="note"># claude_limit_percent.py</span>
+│  └─ <span class="d">tools/</span>                    <span class="note"># shared-canvas.html</span>
+└─ <span class="d">usage-widget/</span>                 <span class="note"># no-Python desktop widget</span>
+   ├─ <span class="f">usage-widget.ps1</span>           <span class="note"># WinForms + curl.exe</span>
+   ├─ <span class="f">cuw.vbs</span> · <span class="f">cuw.bat</span>          <span class="note"># launch hidden</span>
+   └─ <span class="f">README.md</span> · <span class="f">README_TR.md</span></pre>
+    </section>
+
+    <section id="claudemd">
+      <h3><span class="ic">📐</span>CLAUDE.md — the working rules</h3>
+      <p class="lead">Loaded into every session. This is <em>how we work</em>, distilled from long sessions.</p>
+      <div class="grid2">
+        <div class="card"><h4>How the user thinks</h4>
+          <p>"Is it enough?", simpler-as-can-be, copy-paste-ready, whole-picture-before-parts,
+             mockup-before-code, co-worker not a vending machine. Course corrections come direct — re-align, don't push the old plan.</p></div>
+        <div class="card"><h4>Critical rules</h4>
+          <p>No default values without permission · ask before implementing missing decisions ·
+             preserve naming · no <code>_v2</code> suffixes · update in place · no speculative scaffolding.</p></div>
+        <div class="card"><h4>Turkish text</h4>
+          <p>Always use diacritics in user-facing strings · Turkish-safe <code>trLower()</code> ·
+             everything through <code>t()</code> · UTF-8 end to end.</p></div>
+        <div class="card"><h4>Error protocol</h4>
+          <p>Root cause over symptom · keep the suite green · no destructive shortcuts
+             (<code>--no-verify</code>, <code>git reset --hard</code>) to make obstacles vanish.</p></div>
+        <div class="card"><h4>Context-window discipline</h4>
+          <p>Main chat = orchestrator (Opus). Push grunt work to cheaper subagents to protect
+             the 5-hour window. Safety valve: main chat outranks a shallow subagent result.</p></div>
+        <div class="card"><h4>Memory model</h4>
+          <p><b>No global memo.</b> One <code>MEMORY.md</code> per project, in the project's own folder.
+             Facts only — never the memory rule itself.</p></div>
+      </div>
+      <div class="callout"><b>Stay in the given folder:</b> don't read/search/<code>cd</code> into dirs other
+        than the one you were pointed at — sibling code bloats context and applies the wrong conventions.</div>
+    </section>
+
+    <section id="python">
+      <h3><span class="ic">🐍</span>CLAUDE - Python.md</h3>
+      <p class="lead">Read on top of CLAUDE.md when the project is Python. The build know-how, kept; the machine paths, dropped.</p>
+      <div class="grid2">
+        <div class="card"><h4>Deployment</h4><p>Per-project <code>requirements.txt</code>; Nuitka-friendly imports so every project ships as a single exe.</p></div>
+        <div class="card"><h4>Structure</h4><p><code>src/ui · core · config</code>; <code>main.py</code> coordinates, doesn't implement; core never imports UI.</p></div>
+        <div class="card"><h4>UI</h4><p>CustomTkinter only · Material Design 3 palette · compact density · one <code>theme.py</code> owns all tokens.</p></div>
+        <div class="card"><h4>Windows console</h4><p>Pipe Unicode/Turkish output through a unicode converter so it doesn't degrade to <code>?</code>.</p></div>
+      </div>
+      <div class="callout warn"><b>Intentionally removed:</b> machine-specific bits like a fixed shared-<code>.venv</code>
+        location and project-specific exceptions. The Python <em>workflow</em> travels; where the venv lives does not.</div>
+    </section>
+
+    <section id="agents">
+      <h3><span class="ic">🤖</span>Subagents</h3>
+      <p class="lead">Stack-aware helpers that keep big output out of the main context. Spawn by type, don't re-describe.</p>
+      <div class="grid2">
+        <div class="card"><h4><code>co-explorer</code> <span class="tag">sonnet · read-only</span></h4>
+          <p>Codebase walks and "where/how is X" searches. Returns a tight conclusion + 2–5 <code>file:line</code> refs,
+             not file dumps. Detects Go/JS vs Python from one listing. Stays in the active project.</p></div>
+        <div class="card"><h4><code>co-tester</code> <span class="tag">sonnet · runs cmds</span></h4>
+          <p>Runs builds/tests/e2e and reports a verdict — PASS/FAIL, counts, trimmed failures —
+             not a transcript. Won't cheat red→green. Uses the project's venv, never system Python.</p></div>
+      </div>
+    </section>
+
+    <section id="skill">
+      <h3><span class="ic">💾</span>save-session-state</h3>
+      <p class="lead">Checkpoint the session + report how close you are to the 5-hour wall.</p>
+      <div class="card">
+        <p>On "save state" / "checkpoint" / a milestone, the skill: reads the live 5h limit %, then
+           appends a short timestamped block to the active project's <code>MEMORY.md</code> so a fresh
+           session resumes cleanly after compaction or a rate-limit reset.</p>
+        <pre><code><span class="cmt"># the % comes from this portable call (no drive path)</span>
+<span class="kw">python</span> ~/.claude/scripts/claude_limit_percent.py --verbose
+<span class="cmt"># Saved at 14:20. 5h limit at 15.0% (resets in 2h44m).</span></code></pre>
+      </div>
+      <div class="callout">Fails soft: if credentials are missing the checkpoint still saves — you just lose the % line.</div>
+    </section>
+
+    <section id="canvas">
+      <h3><span class="ic">🎨</span>Shared drawing canvas</h3>
+      <p class="lead">A two-way visual channel for when words get fuzzy on a layout or interaction.</p>
+      <div class="card">
+        <p>Claude sketches a proposal on the <b>base</b> layer; you draw corrections on the transparent
+           <b>user</b> layer; both persist in <code>localStorage</code>. Driven over a debug-port Chrome
+           (<code>--remote-debugging-port=9333</code>). Animations run locally via one <code>requestAnimationFrame</code>
+           loop — essentially token-free, so Claude can make an interaction <em>move</em> before any code is written.</p>
+        <p><a href=".claude/tools/shared-canvas.html">→ open shared-canvas.html</a></p>
+      </div>
+    </section>
+
+    <section id="widget">
+      <h3><span class="ic">📊</span>Usage widget <span style="font-size:13px;color:var(--faint);font-weight:400">— no Python</span></h3>
+      <p class="lead">A floating desktop readout of your 5-hour limit. Zero install on Win10/11.</p>
+
+      <!-- inline mockup of the widget + color tiers (pure SVG/CSS, no image files) -->
+      <div class="card" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center">
+        <div>
+          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">the widget</div>
+          <svg width="200" height="74" viewBox="0 0 200 74" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.5))">
+            <rect x="1" y="1" width="198" height="72" rx="8" fill="#1a1a1a" stroke="#2c2c2c"/>
+            <text x="14" y="32" font-family="Segoe UI,sans-serif" font-size="17" font-weight="bold" fill="#00ff88">5h: 47% <tspan fill="#00ff88">(1h58m)</tspan></text>
+            <text x="14" y="56" font-family="Consolas,monospace" font-size="13" fill="#888">@ 14:02:13</text>
+          </svg>
+          <div style="font-size:11px;color:var(--faint);margin-top:8px;text-align:center">click → <code style="font-size:10px">@14:30</code> · right-click for menu</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">color by load</div>
+          <svg width="220" height="92" viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg">
+            <g font-family="Segoe UI,sans-serif" font-size="13" font-weight="bold">
+              <circle cx="14" cy="14" r="6" fill="#00ff88"/><text x="28" y="19" fill="#cfd8e3">&lt; 50%  — green</text>
+              <circle cx="14" cy="38" r="6" fill="#dce646"/><text x="28" y="43" fill="#cfd8e3">50–70% — yellow</text>
+              <circle cx="14" cy="62" r="6" fill="#ffb446"/><text x="28" y="67" fill="#cfd8e3">70–90% — amber</text>
+              <circle cx="14" cy="86" r="6" fill="#ff5a5a"/><text x="28" y="91" fill="#cfd8e3">≥ 90%  — red</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card"><h4>What it is</h4>
+          <p>Always-on-top, semi-transparent, draggable. Line 1 is the limit % + when it resets;
+             line 2 is when it was last checked. Color-coded by load (see above). Launch with
+             <code>usage-widget\cuw.bat</code>.</p></div>
+        <div class="card"><h4>Zero install</h4>
+          <p>Uses only Windows built-ins: <b>WinForms</b> for the window, <b>curl.exe</b> for the
+             HTTPS call. No Python, no pip, no admin.</p></div>
+        <div class="card"><h4>5h ↔ 5h + 7d</h4>
+          <p>The 7-day row is off by default (some accounts return no weekly data → <code>7d: n/a</code>).
+             Flip it live via the <b>right-click → Show 7d</b> toggle — no code edit. The choice persists.</p></div>
+        <div class="card"><h4>Click to toggle time</h4>
+          <p><b>Click</b> the widget to swap the reset display between remaining
+             <code>(1h58m)</code> and exact clock <code>@14:30</code>. <b>Drag</b> to move,
+             <b>right-click</b> for the menu.</p></div>
+        <div class="card"><h4>Same credentials</h4>
+          <p>Reads the one shared <code>~/.claude/claude_usage.env</code> — no separate config.</p></div>
+        <div class="card"><h4>Rate-limit failsafe</h4>
+          <p>On a 403 it keeps the last good numbers and tags the clock line
+             <code>(RL)</code> instead of going blank, then retries in 60s.</p></div>
+      </div>
+      <div class="callout warn"><b>"Running scripts is disabled on this system":</b> Windows blocks
+        <code>.ps1</code> by default. You don't need to change anything — always launch via
+        <code>cuw.bat</code> / <code>cuw.vbs</code>, which pass <code>-ExecutionPolicy Bypass</code> for that
+        one run only (no admin, nothing permanent). Don't double-click the <code>.ps1</code> directly.</div>
+      <div class="callout"><b>Why curl, not <code>Invoke-RestMethod</code>:</b> claude.ai is behind
+        Cloudflare, which 403-challenges PowerShell's TLS stack but lets <code>curl.exe</code> through.
+        curl is the reliable zero-dependency path.</div>
+    </section>
+
+    <section id="settings">
+      <h3><span class="ic">⚙️</span>settings.json</h3>
+      <p class="lead">Small, path-free, portable as-is.</p>
+      <pre><code>{
+  <span class="str">"theme"</span>: <span class="str">"dark"</span>,
+  <span class="str">"agentPushNotifEnabled"</span>: <span class="kw">true</span>,
+  <span class="str">"effortLevel"</span>: <span class="str">"medium"</span>,   <span class="cmt">// high only when Claude flags it's worth it</span>
+  <span class="str">"model"</span>: <span class="str">"opus"</span>,
+  <span class="str">"includeCoAuthoredBy"</span>: <span class="kw">false</span>,
+  <span class="str">"cleanupPeriodDays"</span>: <span class="var">365</span>
+}</code></pre>
+      <div class="callout warn"><b>Not included by choice:</b> <code>bypassPermissions</code> and
+        <code>skipDangerousModePermissionPrompt</code> from the work machine — that's a safety posture
+        to opt into deliberately, not ship by default.</div>
+    </section>
+
+    <section id="env">
+      <h3><span class="ic">🔑</span>The usage .env</h3>
+      <p class="lead">Personal session credentials — kept out of the set, kept off any shared zip.</p>
+      <div class="card">
+        <p>Three keys power the 5h limit readout: <code>SESSION_KEY</code>, <code>DEVICE_ID</code>, <code>ORG_ID</code>.
+           The set ships only <code>claude_usage.env.example</code> (empty). Your real file lives at
+           <code>~/.claude/claude_usage.env</code>, fully decoupled from any project folder.</p>
+      </div>
+      <div class="callout warn"><b>Security:</b> never put the filled-in <code>.env</code> in the zip you share —
+        it's a live session token. Only the <code>.example</code> belongs in the set.</div>
+    </section>
+
+    <section id="portable">
+      <h3><span class="ic">🧭</span>Portability rules (how this stays PC-agnostic)</h3>
+      <div class="grid2">
+        <div class="card"><h4>No absolute paths</h4>
+          <p>Everything resolves from <code>$HOME</code> / <code>~</code> or the script's own location
+             (<code>__file__</code>). Grep the whole tree for a drive letter → zero matches.</p></div>
+        <div class="card"><h4>.env found by search</h4>
+          <p>The limit script checks <code>$CLAUDE_LIMIT_ENV</code> → <code>~/.claude/claude_usage.env</code>
+             → next-to-script. First found wins. New machine = drop the file, done.</p></div>
+        <div class="card"><h4>No dead projects</h4>
+          <p>All project-specific and work-only references stripped. Rules are project-agnostic;
+             project detail lives in each project's own files.</p></div>
+        <div class="card"><h4>Win11 + PowerShell</h4>
+          <p>The one environment assumption — true for all your PCs. The only place it's stated is the
+             CLAUDE.md header.</p></div>
+      </div>
+    </section>
+
+    <footer>
+      Built as a carry-anywhere master of the <code>~/.claude</code> setup · zip the
+      <code>claude_global_setup</code> folder to move it · the live config stays in <code>~/.claude</code>.
+      <br>Tip: press <span class="kbd">Ctrl</span>+<span class="kbd">F</span> to jump to any component.
+    </footer>
+  </main>
+</div>
+
+<script>
+  // active-section highlight in the sidebar
+  const links=[...document.querySelectorAll('#nav a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:"-20% 0px -70% 0px",threshold:0});
+  document.querySelectorAll('section,.hero').forEach(s=>{if(s.id)obs.observe(s)});
+</script>
+</body>
+</html>

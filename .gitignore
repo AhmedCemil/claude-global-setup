@@ -1,0 +1,41 @@
+# ── Credentials & secrets — NEVER commit ──────────────────────────────
+# The real env file with SESSION_KEY / DEVICE_ID / ORG_ID. Only the
+# *.example template is tracked.
+*.env
+!*.env.example
+claude_usage.env
+.claude/claude_usage.env
+
+# ── Machine-local runtime state (per-PC, not shareable) ───────────────
+.claude/.limit_cache.json        # 30s cache of the usage API response
+.claude/.usage_widget.cfg        # widget position + 7d toggle
+.claude/.usage_widget_pos        # (legacy) widget position
+.claude/.last-cleanup
+.claude/.credentials.json
+.claude/.last-update-result.json
+.claude/mcp-needs-auth-cache.json
+
+# ── Claude Code session / cache dirs (machine-specific, large) ────────
+.claude/projects/
+.claude/sessions/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/file-history/
+.claude/history.jsonl
+.claude/ide/
+.claude/backups/
+.claude/cache/
+.claude/plans/
+.claude/downloads/
+.claude/plugins/
+
+# ── Private working notes — for us only, NEVER push ──────────────────
+# Our session memory about how this set was built. Stays local.
+MEMORY.md
+
+# ── OS / editor noise ─────────────────────────────────────────────────
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*~
