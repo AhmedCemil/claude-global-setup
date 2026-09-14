@@ -144,7 +144,6 @@
       <a href="#agents">Alt ajanlar</a>
       <a href="#skill">save-session-state</a>
       <a href="#canvas">Paylaşımlı tuval</a>
-      <a href="#widget">Kullanım widget'ı</a>
       <a href="#settings">settings.json</a>
       <div class="grp">Referans</div>
       <a href="#env">Kullanım .env</a>
@@ -218,11 +217,7 @@
 │  ├─ <span class="d">agents/</span>                   <span class="note"># co-explorer · co-tester</span>
 │  ├─ <span class="d">skills/</span>                   <span class="note"># save-session-state</span>
 │  ├─ <span class="d">scripts/</span>                  <span class="note"># claude_limit_percent.py</span>
-│  └─ <span class="d">tools/</span>                    <span class="note"># shared-canvas.html</span>
-└─ <span class="d">usage-widget/</span>                 <span class="note"># Python'suz masaüstü widget'ı</span>
-   ├─ <span class="f">usage-widget.ps1</span>           <span class="note"># WinForms + curl.exe</span>
-   ├─ <span class="f">cuw.vbs</span> · <span class="f">cuw.bat</span>          <span class="note"># gizli başlatma</span>
-   └─ <span class="f">README.md</span> · <span class="f">README_TR.md</span></pre>
+   └─ <span class="d">tools/</span>                    <span class="note"># shared-canvas.html, browser-test-kit, transkript</span></pre>
     </section>
 
     <section id="claudemd">
@@ -302,63 +297,6 @@
            döngüsüyle yerel çalışır — neredeyse token-bedava, böylece Claude kod yazılmadan önce bir etkileşimi <em>hareket ettirebilir</em>.</p>
         <p><a href=".claude/tools/shared-canvas.html">→ shared-canvas.html'i aç</a></p>
       </div>
-    </section>
-
-    <section id="widget">
-      <h3><span class="ic">📊</span>Kullanım widget'ı <span style="font-size:13px;color:var(--faint);font-weight:400">— Python'suz</span></h3>
-      <p class="lead">5 saatlik limitinizin masaüstünde yüzen göstergesi. Win10/11'de sıfır kurulum.</p>
-
-      <!-- widget + renk kademeleri maketi (saf SVG/CSS, görsel dosya yok) -->
-      <div class="card" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center">
-        <div>
-          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">widget</div>
-          <svg width="200" height="74" viewBox="0 0 200 74" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.5))">
-            <rect x="1" y="1" width="198" height="72" rx="8" fill="#1a1a1a" stroke="#2c2c2c"/>
-            <text x="14" y="32" font-family="Segoe UI,sans-serif" font-size="17" font-weight="bold" fill="#00ff88">5h: 47% <tspan fill="#00ff88">(1h58m)</tspan></text>
-            <text x="14" y="56" font-family="Consolas,monospace" font-size="13" fill="#888">@ 14:02:13</text>
-          </svg>
-          <div style="font-size:11px;color:var(--faint);margin-top:8px;text-align:center">tıkla → <code style="font-size:10px">@14:30</code> · menü için sağ tık</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">yüke göre renk</div>
-          <svg width="220" height="92" viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg">
-            <g font-family="Segoe UI,sans-serif" font-size="13" font-weight="bold">
-              <circle cx="14" cy="14" r="6" fill="#00ff88"/><text x="28" y="19" fill="#cfd8e3">&lt; %50  — yeşil</text>
-              <circle cx="14" cy="38" r="6" fill="#dce646"/><text x="28" y="43" fill="#cfd8e3">%50–70 — sarı</text>
-              <circle cx="14" cy="62" r="6" fill="#ffb446"/><text x="28" y="67" fill="#cfd8e3">%70–90 — turuncu</text>
-              <circle cx="14" cy="86" r="6" fill="#ff5a5a"/><text x="28" y="91" fill="#cfd8e3">≥ %90  — kırmızı</text>
-            </g>
-          </svg>
-        </div>
-      </div>
-
-      <div class="grid2">
-        <div class="card"><h4>Nedir</h4>
-          <p>Her zaman üstte, yarı saydam, sürüklenebilir. 1. satır limit % + ne zaman sıfırlandığı;
-             2. satır en son ne zaman kontrol edildiği. Yüke göre renkli (yukarıya bakın). Başlatma:
-             <code>usage-widget\cuw.bat</code>.</p></div>
-        <div class="card"><h4>Sıfır kurulum</h4>
-          <p>Yalnızca Windows yerleşikleri: pencere için <b>WinForms</b>, HTTPS çağrısı için
-             <b>curl.exe</b>. Python yok, pip yok, yönetici yok.</p></div>
-        <div class="card"><h4>5s ↔ 5s + 7g</h4>
-          <p>7 günlük satır varsayılan kapalı (bazı hesaplar haftalık veri döndürmez → <code>7d: n/a</code>).
-             <b>Sağ tık → Show 7d</b> ile canlı aç/kapat — kod düzenlemesi yok. Seçim kalıcıdır.</p></div>
-        <div class="card"><h4>Tıkla, zamanı değiştir</h4>
-          <p>Widget'a <b>tıklayarak</b> sıfırlanma göstergesini kalan süre <code>(1h58m)</code> ile
-             tam saat <code>@14:30</code> arasında değiştir. Taşımak için <b>sürükle</b>, menü için <b>sağ tık</b>.</p></div>
-        <div class="card"><h4>Aynı kimlik bilgileri</h4>
-          <p>Tek paylaşımlı <code>~/.claude/claude_usage.env</code> dosyasını okur — ayrı yapılandırma yok.</p></div>
-        <div class="card"><h4>Limit güvenliği</h4>
-          <p>403 alınca boş kalmak yerine son iyi değerleri korur ve saat satırını
-             <code>(RL)</code> ile işaretler, sonra 60 sn'de tekrar dener.</p></div>
-      </div>
-      <div class="callout warn"><b>"Bu sistemde betik çalıştırma devre dışı":</b> Windows <code>.ps1</code>
-        dosyalarını varsayılan engeller. Hiçbir şey değiştirmenize gerek yok — her zaman
-        <code>cuw.bat</code> / <code>cuw.vbs</code> ile başlatın; bunlar yalnızca o çalıştırma için
-        <code>-ExecutionPolicy Bypass</code> verir (yönetici gerekmez, kalıcı bir şey değişmez).
-        <code>.ps1</code>'e doğrudan çift tıklamayın.</div>
-      <div class="callout"><b>Neden <code>Invoke-RestMethod</code> değil curl:</b> claude.ai Cloudflare arkasında,
-        PowerShell'in TLS yığınını 403 ile sınar ama <code>curl.exe</code>'ı geçirir. curl, bağımlılıksız güvenilir yoldur.</div>
     </section>
 
     <section id="settings">

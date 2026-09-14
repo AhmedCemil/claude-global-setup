@@ -144,7 +144,6 @@
       <a href="#agents">Subagents</a>
       <a href="#skill">save-session-state</a>
       <a href="#canvas">Shared canvas</a>
-      <a href="#widget">Usage widget</a>
       <a href="#settings">settings.json</a>
       <div class="grp">Reference</div>
       <a href="#env">Usage .env</a>
@@ -218,11 +217,7 @@
 │  ├─ <span class="d">agents/</span>                   <span class="note"># co-explorer · co-tester</span>
 │  ├─ <span class="d">skills/</span>                   <span class="note"># save-session-state</span>
 │  ├─ <span class="d">scripts/</span>                  <span class="note"># claude_limit_percent.py</span>
-│  └─ <span class="d">tools/</span>                    <span class="note"># shared-canvas.html</span>
-└─ <span class="d">usage-widget/</span>                 <span class="note"># no-Python desktop widget</span>
-   ├─ <span class="f">usage-widget.ps1</span>           <span class="note"># WinForms + curl.exe</span>
-   ├─ <span class="f">cuw.vbs</span> · <span class="f">cuw.bat</span>          <span class="note"># launch hidden</span>
-   └─ <span class="f">README.md</span> · <span class="f">README_TR.md</span></pre>
+   └─ <span class="d">tools/</span>                    <span class="note"># shared-canvas.html, browser-test-kit, transkript</span></pre>
     </section>
 
     <section id="claudemd">
@@ -302,64 +297,6 @@
            loop — essentially token-free, so Claude can make an interaction <em>move</em> before any code is written.</p>
         <p><a href=".claude/tools/shared-canvas.html">→ open shared-canvas.html</a></p>
       </div>
-    </section>
-
-    <section id="widget">
-      <h3><span class="ic">📊</span>Usage widget <span style="font-size:13px;color:var(--faint);font-weight:400">— no Python</span></h3>
-      <p class="lead">A floating desktop readout of your 5-hour limit. Zero install on Win10/11.</p>
-
-      <!-- inline mockup of the widget + color tiers (pure SVG/CSS, no image files) -->
-      <div class="card" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center">
-        <div>
-          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">the widget</div>
-          <svg width="200" height="74" viewBox="0 0 200 74" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 6px 16px rgba(0,0,0,.5))">
-            <rect x="1" y="1" width="198" height="72" rx="8" fill="#1a1a1a" stroke="#2c2c2c"/>
-            <text x="14" y="32" font-family="Segoe UI,sans-serif" font-size="17" font-weight="bold" fill="#00ff88">5h: 47% <tspan fill="#00ff88">(1h58m)</tspan></text>
-            <text x="14" y="56" font-family="Consolas,monospace" font-size="13" fill="#888">@ 14:02:13</text>
-          </svg>
-          <div style="font-size:11px;color:var(--faint);margin-top:8px;text-align:center">click → <code style="font-size:10px">@14:30</code> · right-click for menu</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--faint);margin-bottom:8px;text-align:center">color by load</div>
-          <svg width="220" height="92" viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg">
-            <g font-family="Segoe UI,sans-serif" font-size="13" font-weight="bold">
-              <circle cx="14" cy="14" r="6" fill="#00ff88"/><text x="28" y="19" fill="#cfd8e3">&lt; 50%  — green</text>
-              <circle cx="14" cy="38" r="6" fill="#dce646"/><text x="28" y="43" fill="#cfd8e3">50–70% — yellow</text>
-              <circle cx="14" cy="62" r="6" fill="#ffb446"/><text x="28" y="67" fill="#cfd8e3">70–90% — amber</text>
-              <circle cx="14" cy="86" r="6" fill="#ff5a5a"/><text x="28" y="91" fill="#cfd8e3">≥ 90%  — red</text>
-            </g>
-          </svg>
-        </div>
-      </div>
-
-      <div class="grid2">
-        <div class="card"><h4>What it is</h4>
-          <p>Always-on-top, semi-transparent, draggable. Line 1 is the limit % + when it resets;
-             line 2 is when it was last checked. Color-coded by load (see above). Launch with
-             <code>usage-widget\cuw.bat</code>.</p></div>
-        <div class="card"><h4>Zero install</h4>
-          <p>Uses only Windows built-ins: <b>WinForms</b> for the window, <b>curl.exe</b> for the
-             HTTPS call. No Python, no pip, no admin.</p></div>
-        <div class="card"><h4>5h ↔ 5h + 7d</h4>
-          <p>The 7-day row is off by default (some accounts return no weekly data → <code>7d: n/a</code>).
-             Flip it live via the <b>right-click → Show 7d</b> toggle — no code edit. The choice persists.</p></div>
-        <div class="card"><h4>Click to toggle time</h4>
-          <p><b>Click</b> the widget to swap the reset display between remaining
-             <code>(1h58m)</code> and exact clock <code>@14:30</code>. <b>Drag</b> to move,
-             <b>right-click</b> for the menu.</p></div>
-        <div class="card"><h4>Same credentials</h4>
-          <p>Reads the one shared <code>~/.claude/claude_usage.env</code> — no separate config.</p></div>
-        <div class="card"><h4>Rate-limit failsafe</h4>
-          <p>On a 403 it keeps the last good numbers and tags the clock line
-             <code>(RL)</code> instead of going blank, then retries in 60s.</p></div>
-      </div>
-      <div class="callout warn"><b>"Running scripts is disabled on this system":</b> Windows blocks
-        <code>.ps1</code> by default. You don't need to change anything — always launch via
-        <code>cuw.bat</code> / <code>cuw.vbs</code>, which pass <code>-ExecutionPolicy Bypass</code> for that
-        one run only (no admin, nothing permanent). Don't double-click the <code>.ps1</code> directly.</div>
-      <div class="callout"><b>Why curl, not <code>Invoke-RestMethod</code>:</b> claude.ai is behind
-        Cloudflare, which 403-challenges PowerShell's TLS stack but lets <code>curl.exe</code> through.
-        curl is the reliable zero-dependency path.</div>
     </section>
 
     <section id="settings">
