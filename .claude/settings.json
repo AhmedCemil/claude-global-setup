@@ -1,8 +1,12 @@
 {
-  "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "effortLevel": "medium",
-  "model": "opus",
+  "cleanupPeriodDays": 365,
   "includeCoAuthoredBy": false,
-  "cleanupPeriodDays": 365
+  "model": "opus",
+  "effortLevel": "high",
+  "tui": "fullscreen",
+  "theme": "dark",
+  "switchModelsOnFlag": false,
+  "agentPushNotifEnabled": true,
+  "awaySummaryEnabled": false,
+  "remoteControlAtStartup": false
 }

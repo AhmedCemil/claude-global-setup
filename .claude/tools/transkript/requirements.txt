@@ -1,0 +1,15 @@
+# transkript.py — bağımlılıklar
+#
+# Kurulum:
+#   pip install -r requirements.txt
+#
+# ffmpeg ayrıca PATH'te olmalı (video dosyalarından ses çıkarmak için).
+
+faster-whisper>=1.2.1
+
+# --- GPU (NVIDIA) için ---
+# CTranslate2 bunları site-packages altında arar ama PATH'e eklemez;
+# transkript.py içindeki cuda_dll_yolu_ekle() bu yüzden var.
+# GPU kullanmayacaksanız --cpu ile çalıştırın, bu ikisi gerekmez.
+nvidia-cublas-cu12
+nvidia-cudnn-cu12

@@ -1,0 +1,9 @@
+{
+  "name": "Trendyol",
+  "match": "trendyol.com",
+  "productUrlPattern": "-p-",
+  "titleSelectors": ["h1"],
+  "priceSelectors": [".prc-dsc", ".product-price-container", "[class*=\"price\"]"],
+  "attrSelectors": ["[class*=\"attribute\"]", "[class*=\"detail-attr\"]", "ul li"],
+  "notes": "Listing titles rarely carry the decisive spec - open the detail page for real numbers."
+}
