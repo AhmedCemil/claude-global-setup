@@ -99,4 +99,5 @@ Likewise `machines.json` holds your hostnames and folder layout, so it stays loc
 
 ## License
 
-Share freely. No warranty — these are personal dotfiles offered as a template.
+MIT — see [`LICENSE`](LICENSE). Personal dotfiles, offered as a template: use them, fork
+them, make them yours.

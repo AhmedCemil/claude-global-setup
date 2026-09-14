@@ -102,4 +102,5 @@ kalır — bkz. [`machines.json.example`](.claude/machines.json.example).
 
 ## Lisans
 
-Özgürce paylaşın. Garanti yok — bunlar şablon olarak sunulan kişisel dotfile'lardır.
+MIT — bkz. [`LICENSE`](LICENSE). Şablon olarak sunulan kişisel dotfile'lar: kullanın,
+çatallayın, kendinize uyarlayın.
