@@ -27,16 +27,22 @@ the repo + release one-liners. Both paths are shown.
 From inside the folder, confirm nothing private/identifying is about to be committed:
 
 ```powershell
-# nothing personal or secret in tracked files?
-Select-String -Path .\* -Pattern 'SESSION_KEY=.\w|sk-ant-|ahmed|bilgin|pazarlama|DiskD' -Recurse |
-  Where-Object { $_.Path -notlike '*MEMORY.md' }
-# ^ expect NO output (a few empty-template / placeholder hits are fine to eyeball)
+# 1) nothing personal or secret in files git would ship?
+#    (scan what git tracks/would add - not the whole folder, which holds ignored files)
+$files = @(git ls-files) + @(git status --porcelain -uall |
+  Where-Object { $_ -match '^\?\?' } | ForEach-Object { $_.Substring(3).Trim() })
+$files | Where-Object { Test-Path $_ -PathType Leaf } |
+  Select-String -Pattern 'SESSION_KEY=.\w|sk-ant-|ghp_|github_pat_|<your-name>|<your-hostname>'
+# ^ expect NO output. Add your own name / employer / hostnames to that pattern.
 
-# confirm the real .env and MEMORY.md are ignored
-git check-ignore .claude\claude_usage.env MEMORY.md    # run after step 2 init
+# 2) confirm the private files are ignored (run after step 2 init)
+git check-ignore .claude\machines.json .claude\claude_usage.env MEMORY.md gh_token.env
+# ^ expect all four echoed back = all ignored
 ```
 
-If `Select-String` prints real values → stop and scrub before continuing.
+If anything prints real values → stop and scrub before continuing. The two `.example`
+templates are the only credential/machine files that may ship; both must be empty of
+real values.
 
 ---
 
@@ -115,7 +121,7 @@ Remove-Item -Recurse -Force .\_ziptest
 ```powershell
 gh release create v1.0.0 .\claude_global_setup.zip `
   --title "v1.0.0 — Claude Global Setup" `
-  --notes "Portable Claude Code config + no-Python usage widget. Unzip, merge .claude into ~/.claude, see GUIDE.html."
+  --notes "Portable Claude Code config. Unzip, merge .claude into ~/.claude, see GUIDE.html."
 ```
 
 ### Option B — on the website
@@ -135,7 +141,7 @@ drag `claude_global_setup.zip` into **Attach binaries** → **Publish release**.
    ```
 4. (Optional, for the usage %) copy `claude_usage.env.example` →
    `~/.claude/claude_usage.env` and fill in the three keys.
-5. Launch Claude Code. For the widget: run `usage-widget\cuw.bat`.
+5. Launch Claude Code.
 
 ---
 
