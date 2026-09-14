@@ -1,0 +1,9 @@
+{
+  "name": "Generic",
+  "match": "*",
+  "productUrlPattern": null,
+  "titleSelectors": ["h1", "[itemprop=\"name\"]", "title"],
+  "priceSelectors": ["[itemprop=\"price\"]", "[class*=\"price\"]", "[class*=\"fiyat\"]"],
+  "attrSelectors": ["table tr", "dl", "ul li", "[class*=\"attribute\"]", "[class*=\"spec\"]"],
+  "notes": "Fallback when no site profile matches. Selectors are broad on purpose; add a real site file once you have seen the page."
+}

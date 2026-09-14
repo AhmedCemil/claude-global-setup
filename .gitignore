@@ -39,3 +39,6 @@ desktop.ini
 .DS_Store
 *.swp
 *~
+
+# Per-machine hostnames and paths - real file stays local, only the .example ships
+.claude/machines.json

@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 """Print the Claude 5-hour rate-limit utilization % to stdout.
 
-Reads credentials (SESSION_KEY, DEVICE_ID, ORG_ID) from a .env file. Fully
-portable — NO absolute paths are hardcoded. Locations are resolved at runtime
-from the home dir and the script's own location, first match wins:
-    1. $CLAUDE_LIMIT_ENV               (optional explicit override)
-    2. ~/.claude/claude_usage.env      (the standard self-contained location)
-    3. <script dir>/claude_usage.env   (so the portable set works pre-install)
-    4. <script dir>/../claude_usage.env
+Reads credentials (SESSION_KEY, DEVICE_ID, ORG_ID) from a per-account .env
+file, so the number always reflects the account Claude Code is CURRENTLY
+logged in as. Fully portable — NO absolute paths are hardcoded.
 
-To use on any machine: copy your .env to ~/.claude/claude_usage.env (or set
-CLAUDE_LIMIT_ENV). No code edit, no machine-specific path.
+Active account is derived the same way the account switcher does it, with no
+dependency on it: the live login (~/.claude.json -> oauthAccount.
+organizationUuid) is matched against each stored account's identity.json
+(~/.claude/claude_creds/store/<label>/identity.json ->
+oauthAccount.organizationUuid). No state file: nothing to write, nothing to
+go stale, and it stays correct even after a manual /login.
 
-Caches the API response in ~/.claude/.limit_cache.json for 30 seconds so
-back-to-back calls don't hammer the API.
+Env file lookup, first match wins:
+    1. $CLAUDE_LIMIT_ENV                            (explicit override)
+    2. <env dir>/claude_usage - <active label>.env  (per-account, preferred)
+    3. ~/.claude/claude_usage.env                   (legacy single-account)
+    4. <script dir>/claude_usage.env                (portable set, pre-install)
+    5. <script dir>/../claude_usage.env
+where <env dir> is $CLAUDE_ENV_DIR, then ~/.claude/claude_env, then ~/.claude.
+
+If the active label cannot be determined (no store, single-account install),
+it falls back to the legacy locations, so a plain one-account setup keeps
+working unchanged.
+
+Caches the API response per account in ~/.claude/.limit_cache-<label>.json
+for 30 seconds. Keying the cache by account means switching accounts never
+serves the previous account's number.
 
 Output:
     Single line, e.g. "42.3" or "42.3 (resets in 1h23m)" with --verbose.
@@ -23,6 +36,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -31,36 +45,102 @@ from pathlib import Path
 
 CLAUDE_DIR = Path.home() / ".claude"
 SCRIPT_DIR = Path(__file__).resolve().parent
-CACHE_PATH = CLAUDE_DIR / ".limit_cache.json"
+CONF_PATH = Path.home() / ".claude.json"
+STORE_DIR = CLAUDE_DIR / "claude_creds" / "store"
 CACHE_TTL_SECONDS = 30
 API_TIMEOUT = 15
 
 
-def env_candidates() -> list[Path]:
-    """Portable .env locations, all derived from home dir or this script's path."""
+def _org_of(path: Path) -> str:
+    """oauthAccount.organizationUuid from a .claude.json / identity.json."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return ""
+    oauth = data.get("oauthAccount")
+    if not isinstance(oauth, dict):
+        return ""
+    return str(oauth.get("organizationUuid") or "")
+
+
+def active_label() -> str:
+    """Label of the account Claude Code is logged in as right now.
+
+    Same derivation the switcher uses: live organizationUuid matched against
+    each stored identity. Returns '' if it cannot be determined, so callers
+    fall back to the legacy single-account env locations.
+    """
+    live_org = _org_of(CONF_PATH)
+    if not live_org or not STORE_DIR.is_dir():
+        return ""
+    try:
+        entries = sorted(d for d in STORE_DIR.iterdir() if d.is_dir())
+    except OSError:
+        return ""
+    for entry in entries:
+        if _org_of(entry / "identity.json") == live_org:
+            return entry.name
+    return ""
+
+
+def env_dirs() -> list[Path]:
+    """Where per-account widget env files live, in priority order."""
+    dirs: list[Path] = []
+    override = os.environ.get("CLAUDE_ENV_DIR")
+    if override:
+        dirs.append(Path(override))
+    dirs.append(CLAUDE_DIR / "claude_env")
+    dirs.append(CLAUDE_DIR)
+    return dirs
+
+
+def cache_path(label: str = "") -> Path:
+    """Cache keyed per account so a switch never serves a stale number."""
+    if label:
+        return CLAUDE_DIR / f".limit_cache-{re.sub(r'[^A-Za-z0-9._-]', '_', label)}.json"
+    return CLAUDE_DIR / ".limit_cache.json"
+
+
+def env_candidates(label: str = "") -> list[Path]:
+    """Env locations in priority order; the per-account file wins when known."""
     candidates: list[Path] = []
     override = os.environ.get("CLAUDE_LIMIT_ENV")
     if override:
         candidates.append(Path(override))
+    if label:
+        for d in env_dirs():
+            candidates.append(d / f"claude_usage - {label}.env")
     candidates.append(CLAUDE_DIR / "claude_usage.env")
     candidates.append(SCRIPT_DIR / "claude_usage.env")
     candidates.append(SCRIPT_DIR.parent / "claude_usage.env")
     return candidates
 
 
-def find_env_path() -> Path:
-    for path in env_candidates():
+def find_env_path(label: str = "") -> Path:
+    for path in env_candidates(label):
         if path.exists():
             return path
-    searched = "\n  ".join(str(c) for c in env_candidates())
+    searched = "\n  ".join(str(c) for c in env_candidates(label))
+    who = f" for active account '{label}'" if label else ""
     raise FileNotFoundError(
-        "claude_usage.env not found. Set $CLAUDE_LIMIT_ENV or place it at "
-        "~/.claude/claude_usage.env. Searched:\n  " + searched
+        f"usage .env not found{who}. Set $CLAUDE_LIMIT_ENV or place it at "
+        "~/.claude/claude_env/'claude_usage - <label>.env'. Searched:\n  "
+        + searched
     )
 
 
-def load_env() -> dict[str, str]:
-    env_path = find_env_path()
+def label_from_env_path(path: Path, fallback: str = "") -> str:
+    """Label implied by a 'claude_usage - <label>.env' filename.
+
+    Keeps the reported account honest when $CLAUDE_LIMIT_ENV points at a
+    different account's file than the one currently logged in.
+    """
+    m = re.match(r"^claude_usage\s*-\s*(.+)$", path.stem)
+    return m.group(1).strip() if m else fallback
+
+
+def load_env(label: str = "") -> dict[str, str]:
+    env_path = find_env_path(label)
     env: dict[str, str] = {}
     for raw in env_path.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
@@ -71,11 +151,11 @@ def load_env() -> dict[str, str]:
     return env
 
 
-def read_cache() -> dict | None:
-    if not CACHE_PATH.exists():
+def read_cache(path: Path) -> dict | None:
+    if not path.exists():
         return None
     try:
-        data = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
     if not isinstance(data, dict):
@@ -85,9 +165,9 @@ def read_cache() -> dict | None:
     return data.get("payload")
 
 
-def write_cache(payload: dict) -> None:
+def write_cache(path: Path, payload: dict) -> None:
     try:
-        CACHE_PATH.write_text(
+        path.write_text(
             json.dumps({"cached_at": time.time(), "payload": payload}),
             encoding="utf-8",
         )
@@ -130,14 +210,21 @@ def format_resets_at(resets_at: str) -> str:
 def main(argv: list[str]) -> int:
     verbose = "--verbose" in argv or "-v" in argv
 
-    cached = read_cache()
+    label = active_label()
+    try:
+        label = label_from_env_path(find_env_path(label), label)
+    except FileNotFoundError:
+        pass
+    cache_file = cache_path(label)
+
+    cached = read_cache(cache_file)
     if cached is not None:
         payload = cached
     else:
         try:
-            env = load_env()
+            env = load_env(label)
             payload = fetch_usage(env)
-            write_cache(payload)
+            write_cache(cache_file, payload)
         except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError) as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1
@@ -158,8 +245,13 @@ def main(argv: list[str]) -> int:
         return 1
 
     if verbose:
+        bits = []
         resets_at = five.get("resets_at")
-        suffix = f" ({format_resets_at(resets_at)})" if resets_at else ""
+        if resets_at:
+            bits.append(format_resets_at(resets_at))
+        if label:
+            bits.append(f"account: {label}")
+        suffix = f" ({' · '.join(bits)})" if bits else ""
         print(f"{pct_value:.1f}{suffix}")
     else:
         print(f"{pct_value:.1f}")

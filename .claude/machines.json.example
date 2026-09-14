@@ -1,0 +1,46 @@
+{
+  "_comment": [
+    "Per-machine values for a shared Claude config. Everything else in ~/.claude is",
+    "IDENTICAL on every machine; anything that genuinely differs lives here and is",
+    "looked up by hostname, the way a translations file keys strings by locale.",
+    "",
+    "SETUP: copy this file to ~/.claude/machines.json (drop the '.example'), then",
+    "replace the example groups with your own machines. Find a hostname with:",
+    "    node -e \"console.log(require('os').hostname())\"",
+    "",
+    "Read it, take YOUR machine's group, ignore the others. Never hardcode a value",
+    "from another machine's group into a script, a skill, or a CLAUDE.md.",
+    "",
+    "Adding a machine: add a group with its hostname. Nothing else needs editing.",
+    "Unknown hostname falls back to _default, so a new machine still works.",
+    "",
+    "The real machines.json is git-ignored - it contains your hostnames and paths.",
+    "Only this .example ships."
+  ],
+
+  "machines": {
+    "work_pc": {
+      "hostname": "YOUR-WORK-HOSTNAME",
+      "label": "Work PC",
+      "chromeProfilesRoot": "~/.chrome_profiles",
+      "devRoot": "D:/Dev",
+      "notes": "Example group. Rename the key to whatever you like - the hostname is what matches."
+    },
+
+    "home_pc": {
+      "hostname": "YOUR-HOME-HOSTNAME",
+      "label": "Home PC",
+      "chromeProfilesRoot": "~/dev/chrome_profiles",
+      "devRoot": "D:/Projects",
+      "notes": "Example group. Add as many machines as you need."
+    },
+
+    "_default": {
+      "hostname": null,
+      "label": "Unknown machine",
+      "chromeProfilesRoot": "~/dev/chrome_profiles",
+      "devRoot": null,
+      "notes": "Fallback for a machine not listed yet. Keep these paths neutral."
+    }
+  }
+}
