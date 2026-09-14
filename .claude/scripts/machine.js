@@ -5,7 +5,7 @@
 // file keyed by locale. Scripts ask here instead of hardcoding a path.
 //
 //   const M = require('~/.claude/scripts/machine.js');
-//   M.id()                  -> "work_figes_pc"
+//   M.id()                  -> "work_pc"
 //   M.get('chromeProfilesRoot')  -> absolute path, ~ already expanded
 const fs = require('fs');
 const os = require('os');
