@@ -11,6 +11,10 @@ const fs = require('fs');
 // Shown even when their folder is missing, so a freed port is still visible.
 const BASE_PORTS = [9333];
 
+// New projects start here. Older project files may still name lower ports whose
+// folders are gone, and those ports must stay theirs when they come back.
+const FIRST_NEW_PORT = 9400;
+
 function get(port, route) {
   return new Promise((resolve) => {
     const req = http.get(
@@ -70,6 +74,11 @@ function dirSizeMB(dir) {
         (info ? info.name : '-')
     );
   }
+
+  let nextFree = FIRST_NEW_PORT;
+  while (byPort[nextFree] || (await get(nextFree, '/json/version'))) nextFree++;
+  console.log('');
+  console.log(`Next free port for a new project: ${nextFree}`);
 
   // Pre-existing profiles on a different scheme: never clean, rename or launch these.
   const foreign = foreignProfiles();

@@ -32,6 +32,15 @@ const CACHE_DIRS = [
   'Crashpad',
   'component_crx_cache',
   'extensions_crx_cache',
+  // On-device models: re-downloaded on demand, and launch.js no longer fetches them.
+  'OptGuideOnDeviceModel',
+  'OptGuideOnDeviceClassifierModel',
+  'optimization_guide_model_store',
+  'OnDeviceHeadSuggestModel',
+  'screen_ai',
+  'WasmTtsEngine',
+  'SODA',
+  'SODALanguagePacks',
 ];
 
 // Documentation of intent — the code above simply never lists these.
@@ -68,7 +77,28 @@ function dirSize(dir) {
 
 const mb = (b) => (b / 1048576).toFixed(1) + ' MB';
 
-(async () => {
+// Removes the disposable dirs of one profile and returns the bytes they held.
+// { dry: true } only measures. The caller must know the profile is not running.
+function trimProfile(dir, { dry = false } = {}) {
+  let freed = 0;
+  for (const rel of CACHE_DIRS) {
+    const full = path.join(dir, ...rel.split('/'));
+    if (!fs.existsSync(full)) continue;
+    const size = dirSize(full);
+    if (!dry) {
+      // A locked file here means something still holds the profile: report it
+      // rather than forcing, and move on.
+      try { fs.rmSync(full, { recursive: true, force: true }); }
+      catch (e) { console.log(`  ! could not remove ${rel}: ${e.code}`); continue; }
+    }
+    freed += size;
+  }
+  return freed;
+}
+
+module.exports = { trimProfile };
+
+if (require.main === module) (async () => {
   const args = process.argv.slice(2);
   const dry = args.includes('--dry');
   const portArg = args.find((a) => /^\d+$/.test(a));
@@ -88,19 +118,7 @@ const mb = (b) => (b / 1048576).toFixed(1) + ' MB';
       continue;
     }
 
-    let freed = 0;
-    for (const rel of CACHE_DIRS) {
-      const full = path.join(profile.dir, ...rel.split('/'));
-      if (!fs.existsSync(full)) continue;
-      const size = dirSize(full);
-      if (!dry) {
-        // A locked file here means something still holds the profile: report it
-        // rather than forcing, and move on.
-        try { fs.rmSync(full, { recursive: true, force: true }); }
-        catch (e) { console.log(`  ! could not remove ${rel}: ${e.code}`); continue; }
-      }
-      freed += size;
-    }
+    const freed = trimProfile(profile.dir, { dry });
     grandTotal += freed;
     console.log(`${dry ? 'DRY ' : 'OK  '}  ${profile.name} — ${mb(freed)} ${dry ? 'removable' : 'freed'}`);
   }

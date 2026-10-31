@@ -39,9 +39,10 @@ Prints port / project / live / tab count / profile size, plus open tab titles so
 
 ## Which port am I on?
 
-1. **The project's own `CLAUDE.md`** names it. It auto-loads, so this is usually already answered.
-2. **No port assigned?** Run `status.js`, take a free one, add a line to that project's `CLAUDE.md`. Not to a global file.
-3. **Verify before driving.** Folder names show what is *allocated*; only an HTTP check shows what is *live*.
+1. **The project's own `CLAUDE.md`** names it. It auto-loads, so this is usually already answered. If that port has no folder any more, it was cleaned up, and `launch.js <port> <project>` recreates it empty: sign in again where needed.
+2. **No port assigned?** Run `status.js`, take the "next free port" it prints, add a line to that project's `CLAUDE.md`. Not to a global file. New ports start at 9400 so they can't collide with a lower port an older project file still names.
+3. **`launch.js` refuses because the port belongs to another project?** The project file is stale: take the next free port and update that line.
+4. **Verify before driving.** Folder names show what is *allocated*; only an HTTP check shows what is *live*.
 
 ## Launching
 
@@ -56,6 +57,10 @@ Already live on that port → it says so and exits. A brand-new profile is annou
 
 **Launch VISIBLE by default** — the user wants to see it. Use `--headless` when they ask, or when they'll lock the machine: Win+L stalls render and timers in a visible window (the screen merely sleeping is fine).
 
+**Profiles stay small on their own.** `launch.js` turns off the on-device AI model downloads and, before starting, trims a profile whose disposable data is over 200 MB. Logins and settings are kept. A warm cache below that limit is left alone. A Chrome started some other way (a project's own launcher) gets neither; `clean.js` still covers it.
+
+Two flags look like the answer and aren't: `--disable-component-update` also stops the Safe Browsing lists, and `--disk-cache-size` had no measurable effect (10 MB cap: 48 MB cache, no cap: 52 MB).
+
 **Cannot be launched over SSH.** A process started from a non-interactive SSH session dies when that command returns — `launch.js` reports STARTED, the profile is created, and the port is dead moments later. (Verified 2026-09-14: even `Start-Process notepad` over SSH was gone within 3s.) Chrome must be launched from a session running **on that machine** — the local Claude Code session, or the user. Over SSH you can still read state (`status.js`, `clean.js --dry`) and drive a browser someone else already started.
 
 ### Cloning a profile
@@ -66,7 +71,9 @@ A second research browser is far more useful with the first one's logins:
 node ~/.claude/skills/debug-chrome/scripts/new-profile.js 9339 research 9334
 ```
 
-Copies everything except caches and lock files. The source must be closed — copying a running profile yields a corrupt clone.
+Copies everything except caches, on-device models and lock files. The source must be closed — copying a running profile yields a corrupt clone.
+
+Clone a debug profile, not the user's daily Chrome folder by hand: that is how a 4 GB AI model once ended up in a debug profile.
 
 ## Connecting — always through the driver
 
@@ -122,6 +129,7 @@ node ~/.claude/skills/debug-chrome/scripts/clean.js           # all idle profile
 node ~/.claude/skills/debug-chrome/scripts/clean.js 9334      # one port
 ```
 
+- Removes caches and on-device models. Chrome rebuilds or re-downloads whatever it still needs.
 - **Never clean a live port** — deleting from a running profile corrupts it. The script checks and skips.
 - **Never delete settings.** `Preferences`, `Secure Preferences`, `Cookies`, `Login Data`, `Local Storage`, `IndexedDB`, `Local State` stay. Chrome's language lives in Preferences (losing it brings back the translate popup); logins live in Cookies.
 - If a file is locked, the script reports and moves on rather than forcing.

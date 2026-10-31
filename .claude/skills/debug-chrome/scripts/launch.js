@@ -11,6 +11,9 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');
 const { profilesRoot, profileDir, listProfiles, chromeExe } = require('../lib/paths.js');
+const { trimProfile } = require('./clean.js');
+
+const TRIM_ABOVE_BYTES = 200 * 1048576;
 
 function isLive(port) {
   return new Promise((resolve) => {
@@ -37,6 +40,13 @@ function isLive(port) {
   const existing = listProfiles().find((p) => p.port === port);
   const project = positional[1] || (existing ? existing.project : 'general');
 
+  // The folder is the allocation. A second project on the same port would share
+  // tabs with the first, so refuse rather than create a duplicate.
+  if (existing && existing.project !== project) {
+    console.error(`Port ${port} belongs to "${existing.project}". status.js prints the next free port.`);
+    process.exit(1);
+  }
+
   if (await isLive(port)) {
     console.log(`ALREADY_RUNNING port=${port} project=${project}`);
     return;
@@ -52,12 +62,24 @@ function isLive(port) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
+  // Chrome is not running on this profile here, so it is safe to trim. Only past
+  // the limit: a warm cache is worth keeping until it starts costing real space.
+  const cached = trimProfile(dir, { dry: true });
+  if (cached > TRIM_ABOVE_BYTES) {
+    trimProfile(dir);
+    console.log(`TRIMMED ${(cached / 1048576).toFixed(0)} MB of cache`);
+  }
+
   const flags = [
     `--remote-debugging-port=${port}`,
     '--remote-allow-origins=*',
     `--user-data-dir=${dir}`,
     '--no-first-run',
     '--no-default-browser-check',
+    // No on-device AI models: browsing never needs them. Do not add
+    // --disable-component-update (it also stops the Safe Browsing lists) or
+    // --disk-cache-size (measured no effect); the trim above bounds the cache.
+    '--disable-features=OptimizationGuideModelDownloading,OptimizationTargetPrediction,OptimizationHints,OptimizationHintsFetching,OptimizationGuideOnDeviceModel',
   ];
   // Visible is the default: the user wants to watch. Headless only on request —
   // it is also the right choice when the machine will be locked, since Win+L

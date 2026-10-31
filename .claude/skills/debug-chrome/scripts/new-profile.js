@@ -17,6 +17,9 @@ const SKIP = new Set([
   'DawnWebGPUCache', 'GrShaderCache', 'ShaderCache', 'GraphiteDawnCache',
   'component_crx_cache', 'extensions_crx_cache', 'CacheStorage', 'ScriptCache',
   'Crashpad', 'BrowserMetrics', 'Shared Dictionary',
+  'OptGuideOnDeviceModel', 'OptGuideOnDeviceClassifierModel',
+  'optimization_guide_model_store', 'OnDeviceHeadSuggestModel', 'screen_ai',
+  'WasmTtsEngine', 'SODA', 'SODALanguagePacks',
 ]);
 
 // Machine-specific lock/state files must not travel to the clone.
